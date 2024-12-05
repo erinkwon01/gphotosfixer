@@ -20,7 +20,7 @@ def get_photo_taken_time_from_json(json_path):
 
 def organize_photos(input_folder, output_folder):
     # Supported media file extensions
-    media_extensions = {".jpg", ".jpeg", ".png", ".mp4", ".mov", ".avi", ".heic"}
+    media_extensions = {".jpg", ".jpeg", ".png", ".heic", ".mp4", ".mov", ".avi"}
     
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
@@ -36,20 +36,16 @@ def organize_photos(input_folder, output_folder):
             json_path = os.path.join(input_folder, json_file)
             jpg_json_file = get_json_file(file_root + ".JPG")
             jpg_json_path = os.path.join(input_folder, jpg_json_file)
-            photo_taken_time = None
-            print(f"Finding JSON for {file_path}")
+            
             if os.path.exists(json_path):
-                # print(f"\tFound {json_path}")
                 photo_taken_time = get_photo_taken_time_from_json(json_path)
+            # Edge case for live photos saved jointly as JPG and MP4
             elif file_ext.lower() == ".mp4" and os.path.exists(jpg_json_path):
-                # print(f"\tFound {jpg_json_path}")
                 photo_taken_time = get_photo_taken_time_from_json(jpg_json_path)
             else:
                 print(f"Error finding JSON file for {file_path} at {json_path} or {jpg_json_path}.")
                 continue
-            # print(f"\tTimestamp: {photo_taken_time}")
-            
-            # If metadata exists, use it; otherwise, use file's last modified time
+
             if photo_taken_time:
                 photo_date = datetime.fromtimestamp(int(photo_taken_time))
             else:
@@ -57,15 +53,16 @@ def organize_photos(input_folder, output_folder):
                 continue
 
             # Create year/month folder structure
-            year_month_folder = os.path.join(output_folder, f"{photo_date.year}", f"{photo_date.month:02}")
-            os.makedirs(year_month_folder, exist_ok=True)
-            
+            year_folder = os.path.join(output_folder, f"{photo_date.year}")
+            os.makedirs(year_folder, exist_ok=True)
+            dest_file_path = os.path.join(year_folder, file_name)
+
             # Copy the file
-            shutil.copy(file_path, os.path.join(year_month_folder, file_name))
+            shutil.copy(file_path, dest_file_path)
+            os.utime(dest_file_path, (photo_date.timestamp(), photo_date.timestamp()))
 
     print("Photos organized successfully!")
 
-# Usage example
-input_folder = "../dummy photos"  # Replace with your input folder path
-output_folder = "../dumphotosoutput_11"  # Replace with your output folder path
+input_folder = "../dummy photos"  
+output_folder = "../dumphotosoutput_15"  
 organize_photos(input_folder, output_folder)
