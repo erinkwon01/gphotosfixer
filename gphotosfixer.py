@@ -2,6 +2,7 @@ import os
 import json
 import shutil
 from datetime import datetime
+import argparse
 
 def get_json_file(file_name):
     truncated_file_name = file_name
@@ -60,9 +61,14 @@ def organize_photos(input_folder, output_folder):
             # Copy the file
             shutil.copy(file_path, dest_file_path)
             os.utime(dest_file_path, (photo_date.timestamp(), photo_date.timestamp()))
-
+            
     print("Photos organized successfully!")
 
-input_folder = "../dummy photos"  
-output_folder = "../dumphotosoutput_15"  
-organize_photos(input_folder, output_folder)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Organize photos by their metadata timestamp.")
+    parser.add_argument("input_folder", help="Path to the input folder containing photos and metadata.")
+    parser.add_argument("output_folder", help="Path to the output folder for organized photos.")
+    
+    args = parser.parse_args()
+
+    organize_photos(args.input_folder, args.output_folder)
